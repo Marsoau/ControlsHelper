@@ -4,18 +4,16 @@ namespace ControlsHelper.Model
 {
     public class KeyBind
     {
-        public string Function;
+        public string Action;
         public List<int> Keys;
-        public Color Paint;
 
         public KeyBind() {
             Keys = new List<int>();
-            Paint = Color.White;
-            Function = "None";
+            Action = "None";
         }
 
         public override string ToString() {
-            return $"[]({Keys.Count}) {Function}";
+            return $"[]({Keys.Count}) {Action}";
         }
     }
 }

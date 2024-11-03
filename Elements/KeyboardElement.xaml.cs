@@ -184,8 +184,8 @@ namespace ControlsHelper.Elements
 
             if (fromKeyBind is null && toKeyBind is null) return;
 
-            var fromFunction = fromKeyBind?.Function ?? "";
-            var toFunction = toKeyBind?.Function ?? "";
+            var fromFunction = fromKeyBind?.Action ?? "";
+            var toFunction = toKeyBind?.Action ?? "";
 
             SetFunction(fromKey, toFunction);
             SetFunction(toKey, fromFunction);
@@ -219,7 +219,7 @@ namespace ControlsHelper.Elements
                 if (key is not null) newKeys.Add(key.Value);
 
                 keyBind = new KeyBind() {
-                    Function = function,
+                    Action = function,
                     Keys = newKeys,
                 };
                 KeyBinds.Add(keyBind);
@@ -228,7 +228,7 @@ namespace ControlsHelper.Elements
                 KeyBinds.Remove(keyBind);
             }
             else {
-                keyBind.Function = function;
+                keyBind.Action = function;
             }
 
             IsSaved = false;
@@ -282,10 +282,17 @@ namespace ControlsHelper.Elements
             int differenceScore;
             int diffkey = 0;
 
+            int[] scores = new int[100];
+
+            for (int i = 0; i < scores.Length; i++) {
+                scores[i] = 0;
+            }
+
             VisibleKeyBinds.Clear();
             NextKeyBinds.Clear();
             HotKeys.Clear();
             ElevatedKeys.Clear();
+
 
             foreach (var keyBind in KeyBinds) {
                 familiarityScore = 0;
@@ -301,16 +308,37 @@ namespace ControlsHelper.Elements
                     }
                 }
 
-                if (differenceScore == 1 && (familiarityScore == 0 || familiarityScore == PressedKeys.Count)) {
-                    (familiarityScore == 0 ? VisibleKeyBinds : ElevatedKeys).Add(new KeyBind() {
-                        Function = keyBind.Function,
-                        Paint = keyBind.Paint,
+                if (differenceScore == 1) {
+                    (familiarityScore == 0 ? VisibleKeyBinds
+                        : (familiarityScore == PressedKeys.Count ? ElevatedKeys
+                            : null
+                        )
+                    )?.Add(new KeyBind() {
+                        Action = keyBind.Action,
                         Keys = new List<int> { diffkey }
                     });
                 }
                 if (familiarityScore == PressedKeys.Count && differenceScore > 0) {
                     NextKeyBinds.Add(keyBind);
                 }
+            }
+
+            foreach (var keyBind in NextKeyBinds) {
+                foreach (int key in keyBind.Keys) {
+                    scores[key]++;
+                }
+            }
+
+            foreach (var keyBind in VisibleKeyBinds) {
+                scores[keyBind.Keys.First()] = 0;
+            }
+            foreach (var keyBind in ElevatedKeys) {
+                scores[keyBind.Keys.First()] = 0;
+            }
+            for (int i = 0; i < scores.Length; i++) {
+                if (scores[i] == 0) continue;
+
+                HotKeys.Add(i);
             }
 
             /*
@@ -344,14 +372,14 @@ namespace ControlsHelper.Elements
             foreach (var keyBind in VisibleKeyBinds) {
                 key = GetKey(keyBind.Keys.First());
 
-                key.Label = keyBind.Function;
+                key.Label = keyBind.Action;
                 key.ColorStyle = KeyElementStyle.Default;
             }
 
             foreach (var keyBind in ElevatedKeys) {
                 key = GetKey(keyBind.Keys.First());
 
-                key.Label = keyBind.Function;
+                key.Label = keyBind.Action;
                 key.ColorStyle = KeyElementStyle.Elevated;
             }
         }
@@ -426,7 +454,7 @@ namespace ControlsHelper.Elements
                 }
 
                 KeyBinds.Add(new KeyBind() {
-                    Function = br.ReadString(),
+                    Action = br.ReadString(),
                     Keys = keybindKeys,
                 });
             }
@@ -457,7 +485,7 @@ namespace ControlsHelper.Elements
                     bw.Write((byte)key);
                 }
 
-                bw.Write(keybind.Function);
+                bw.Write(keybind.Action);
             }
 
             bw.Close();

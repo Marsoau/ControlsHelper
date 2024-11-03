@@ -50,7 +50,7 @@ namespace ControlsHelper.Windows
 
                 StackPanel_Functions.Children.Add(new KeyBindElement(keys) {
                     Margin = new Thickness(0, 0, 0, 4),
-                    Function = keyBind.Function,
+                    Function = keyBind.Action,
                 });
             }
         }
@@ -75,7 +75,7 @@ namespace ControlsHelper.Windows
             var keybind = KeyboardElement.GetCurrentKeyBind();
 
             if (keybind is not null) {
-                TextBox_FunctionInput.Text = keybind.Function;
+                TextBox_FunctionInput.Text = keybind.Action;
                 TextBox_FunctionInput.SelectAll();
             }
             else {
